@@ -1,0 +1,16 @@
+.examen-general .resumen_resultado {
+    margin: 0;
+}
+
+@media (max-width: 850px){
+    .examen-general .title_exam h2 {
+        font-size: 12px;
+        font-weight: 100%;
+    }
+
+    .examen-general .caja_numero_preguntas2 {
+        position: absolute;
+        top: 274px;
+    }
+
+}

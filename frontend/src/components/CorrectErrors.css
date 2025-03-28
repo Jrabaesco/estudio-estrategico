@@ -1,0 +1,10 @@
+.correct-errors .resumen_resultado {
+    margin: 0;
+}
+
+@media (max-width: 850px) {
+    .correct-errors .caja_numero_preguntas2 {
+        position: absolute;
+        top: 282px;
+    }
+}

@@ -1,0 +1,37 @@
+.numero_letra_respuestas {
+    color: #2f6dea;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: -9px;
+}
+
+.numero_letra_respuestas div {
+    margin-right: 3px ;
+}
+
+.exam-by-topic .resumen_resultado {
+    margin: 0;
+}
+
+.todas_alternativas .borrar{
+    margin: 0 40% 5px 10%;
+}
+
+@media (max-width: 850px){
+    .numero_letra_respuestas {
+        margin: 0 0 70px;
+    }
+
+    .exam-by-topic .title_exam p {
+        font-weight: 100%;
+    }
+
+    .exam-by-topic .caja_numero_preguntas2 {
+        position: absolute;
+        top: 282px;
+    }
+
+    .todas_alternativas .borrar{
+        margin: 0 3% 5px 10px;
+    }
+}

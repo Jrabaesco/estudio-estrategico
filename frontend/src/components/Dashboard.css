@@ -1,0 +1,101 @@
+.conteiner {
+  background: linear-gradient(to top, rgb(41, 198, 94), rgb(15, 82, 37));
+  background-size: cover;
+  background-position: center;
+  width: 100%;
+  min-height: 90.5vh;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  font-family: Arial, sans-serif;
+}
+
+.conteiner_dashboard {
+  background: linear-gradient(to top, rgb(41, 198, 94), rgb(15, 82, 37));
+  background-size: cover;
+  background-position: center;
+  width: 100%;
+  min-height: 89.5vh;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  font-family: Arial, sans-serif;
+  z-index: 1000;
+}
+
+.dashboard {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(7px);
+    background-color: rgba(243, 238, 238, 0.329);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 1);
+    text-align: center;
+    z-index: 1002;
+  }
+  
+  .dashboard h1 {
+    margin-bottom: 20px;
+  }
+  
+  .dashboard .options {
+    text-transform: uppercase;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    }
+  
+  .dashboard .option {
+    width: 20%;
+    margin: 10px 0;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(7px);
+    background-color: rgba(17, 87, 16, 0.655);
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 15px; 
+    font-weight: bold; 
+    color: #ffffff; 
+    text-decoration: none; 
+
+  }
+
+  .dashboard .option img{
+    width: 80px;
+  }
+  
+  .dashboard .option:hover {
+    box-shadow: 0 0 10px rgb(226, 213, 26);
+  }
+  
+  @media (max-width: 768px) {
+    .imgFondo2 {
+      transform: translate(-50%);
+    }
+    .dashboard .option {
+      width: 90%;
+    }
+
+    .dashboard .option img{
+      width: 30px;
+    }
+
+    .dashboard h1 {
+      font-size: 15px;
+      margin: 3px 0; 
+    }
+  }
+  
