@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
+import React, { useState, createContext, useContext } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Register from './components/Register';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
@@ -13,7 +13,10 @@ import CorrectErrors from './components/CorrectErrors';
 import Navbar from './components/Navbar';
 import Results from './components/Results';
 
-const App = () => {
+// Crear contexto de autenticación
+const AuthContext = createContext();
+
+const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
 
@@ -28,30 +31,106 @@ const App = () => {
   };
 
   return (
+    <AuthContext.Provider value={{ isAuthenticated, user, authenticate, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+// Hook personalizado para acceder al contexto
+export const useAuth = () => useContext(AuthContext);
+
+// Componente para rutas protegidas
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
+
+const App = () => {
+  return (
     <Router>
-      <div>
-        {isAuthenticated && <Navbar logout={logout} />}
-        <Switch>
-          <Route exact path="/register" component={Register} />
-          <Route exact path="/login" render={(props) => <Login {...props} authenticate={authenticate} />} />
-          {isAuthenticated ? (
-            <>
-              <Route exact path="/dashboard" render={(props) => <Dashboard {...props} user={user} />} />
-              <Route exact path="/ballot" render={(props) => <Ballot {...props} user={user} />} />
-              <Route exact path="/topic/:id" render={(props) => <TopicDetail {...props} user={user} />} />
-              <Route exact path="/exam-generator" render={(props) => <ExamGenerator {...props} user={user} />} />
-              <Route exact path="/exam-by-topic/:topicId/:questionCount" render={(props) => <ExamByTopic {...props} user={user} />} />
-              <Route exact path="/general-exam" render={(props) => <GeneralExam {...props} user={user} />} />
-              <Route exact path="/examen-general" render={(props) => <ExamenGeneral {...props} user={user} />} />
-              <Route exact path="/correct-errors" render={(props) => <CorrectErrors {...props} user={user} />} />
-              <Route exact path="/results" component={Results} />
-            </>
-          ) : (
-            <Redirect to="/login" />
-          )}
-        </Switch>
-      </div>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </Router>
+  );
+};
+
+const AppContent = () => {
+  const { isAuthenticated, logout } = useAuth();
+
+  return (
+    <div>
+      {isAuthenticated && <Navbar logout={logout} />}
+      <Routes>
+        {/* Rutas públicas */}
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        
+        {/* Rutas protegidas */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }/>
+        
+        <Route path="/ballot" element={
+          <ProtectedRoute>
+            <Ballot />
+          </ProtectedRoute>
+        }/>
+        
+        <Route path="/topic/:id" element={
+          <ProtectedRoute>
+            <TopicDetail />
+          </ProtectedRoute>
+        }/>
+        
+        <Route path="/exam-generator" element={
+          <ProtectedRoute>
+            <ExamGenerator />
+          </ProtectedRoute>
+        }/>
+        
+        <Route path="/exam-by-topic/:topicId/:questionCount" element={
+          <ProtectedRoute>
+            <ExamByTopic />
+          </ProtectedRoute>
+        }/>
+        
+        <Route path="/general-exam" element={
+          <ProtectedRoute>
+            <GeneralExam />
+          </ProtectedRoute>
+        }/>
+        
+        <Route path="/examen-general" element={
+          <ProtectedRoute>
+            <ExamenGeneral />
+          </ProtectedRoute>
+        }/>
+        
+        <Route path="/correct-errors" element={
+          <ProtectedRoute>
+            <CorrectErrors />
+          </ProtectedRoute>
+        }/>
+        
+        <Route path="/results" element={
+          <ProtectedRoute>
+            <Results />
+          </ProtectedRoute>
+        }/>
+        
+        {/* Redirección por defecto */}
+        <Route path="/" element={
+          isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
+        }/>
+        
+        {/* Manejo de rutas no encontradas */}
+        <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
+      </Routes>
+    </div>
   );
 };
 

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import "./Register.css";
+import './Register.css';
 
 const Register = () => {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -12,19 +11,24 @@ const Register = () => {
   });
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const { username, password, name } = formData;
 
-  const onChange = e => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(''); // Limpiar error al escribir
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+    setError('');
   };
 
-  const onSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     
-    // Validación básica del formulario
+    // Validaciones básicas
     if (!username || !password || !name) {
       setError('Todos los campos son obligatorios');
       return;
@@ -35,28 +39,27 @@ const Register = () => {
       return;
     }
 
-    setIsSubmitting(true);
-    
+    setIsLoading(true);
+
     try {
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
-        username: username.toLowerCase(), // Normalizar a minúsculas
-        password,
-        name
-      });
-      
-      setSuccessMessage('Registro exitoso! Serás redirigido al login...');
-      console.log('Registro exitoso:', res.data);
-      
-      // Redirigir después de 2 segundos
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/auth/register`,
+        {
+          username: username.toLowerCase(),
+          password,
+          name
+        }
+      );
+
+      setSuccessMessage('¡Registro exitoso! Redirigiendo al login...');
       setTimeout(() => {
         navigate('/login');
       }, 2000);
-      
     } catch (err) {
       console.error('Error en registro:', err.response?.data || err.message);
-      setError(err.response?.data?.msg || 'Error al registrar el usuario');
+      setError(err.response?.data?.msg || 'Error al registrar el usuario. Intente nuevamente.');
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
@@ -65,8 +68,7 @@ const Register = () => {
       <div className='imgFondo'>
         <img src="/images/fondoSolo.png" alt='img_fondo' />
       </div>
-      
-      <form onSubmit={onSubmit}>
+      <form onSubmit={handleSubmit}>
         <img src='/images/logo.jpg' alt='logo' />
         <h4>REGISTRO DE USUARIOS "ESTRAPOL"</h4>
         
@@ -79,7 +81,7 @@ const Register = () => {
             name="username"
             placeholder='CORREO ELECTRÓNICO'
             value={username}
-            onChange={onChange}
+            onChange={handleChange}
             required
           />
         </div>
@@ -90,7 +92,7 @@ const Register = () => {
             name="password"
             placeholder='CONTRASEÑA'
             value={password}
-            onChange={onChange}
+            onChange={handleChange}
             required
           />
         </div>
@@ -101,14 +103,18 @@ const Register = () => {
             name="name"
             placeholder='GRADO, NOMBRES Y APELLIDOS'
             value={name}
-            onChange={onChange}
+            onChange={handleChange}
             required
           />
         </div>
         
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Registrando...' : 'Registrar'}
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Registrando...' : 'Registrar'}
         </button>
+        
+        <div className="login-link">
+          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link>
+        </div>
       </form>
     </div>
   );
