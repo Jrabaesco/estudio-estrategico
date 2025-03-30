@@ -2,46 +2,92 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
 const User = require('../models/User');
+const { check, validationResult } = require('express-validator');
 
 const router = express.Router();
 
+// Validaciones comunes
+const userValidations = [
+  check('username', 'El usuario es requerido').not().isEmpty(),
+  check('password', 'La contraseña debe tener al menos 6 caracteres').isLength({ min: 6 })
+];
+
 // Ruta de registro
-router.post('/register', async (req, res) => {
+router.post('/register', [
+  ...userValidations,
+  check('name', 'El nombre es requerido').not().isEmpty()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { username, password, name } = req.body;
+
   try {
-    let user = await User.findOne({ username });
+    // Verificar si el usuario existe (case insensitive)
+    let user = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } });
     if (user) {
-      return res.status(400).json({ msg: 'Usuario ya existe' });
+      return res.status(400).json({ errors: [{ msg: 'El usuario ya existe' }] });
     }
-    const userId = `usuario_${new Date().getTime()}`;
+
+    // Hashear la contraseña
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Crear nuevo usuario
     user = new User({
-      _id: userId,
-      username,
-      password,
+      username: username.toLowerCase(), // Normalizar username
+      password: hashedPassword,
       name
     });
+
     await user.save();
-    res.status(201).json({ msg: 'Usuario registrado', userId });
+
+    // Responder sin datos sensibles
+    res.status(201).json({ 
+      msg: 'Usuario registrado exitosamente',
+      user: { id: user._id, name: user.name }
+    });
+
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Error en el servidor');
+    console.error('Error en registro:', err.message);
+    res.status(500).json({ errors: [{ msg: 'Error en el servidor' }] });
   }
 });
 
 // Ruta de login
-router.post('/login', (req, res, next) => {
+router.post('/login', userValidations, (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   passport.authenticate('local', (err, user, info) => {
     if (err) {
-      return next(err);
+      console.error('Error en autenticación:', err);
+      return res.status(500).json({ errors: [{ msg: 'Error en el servidor' }] });
     }
     if (!user) {
-      return res.status(400).json({ msg: info.message });
+      return res.status(401).json({ errors: [{ msg: info.message || 'Credenciales inválidas' }] });
     }
     req.logIn(user, (err) => {
       if (err) {
-        return next(err);
+        console.error('Error en login:', err);
+        return res.status(500).json({ errors: [{ msg: 'Error en el servidor' }] });
       }
-      return res.status(200).json({ msg: 'Login exitoso', user });
+      
+      // Excluir datos sensibles en la respuesta
+      const userData = {
+        id: user._id,
+        name: user.name,
+        username: user.username
+      };
+      
+      return res.status(200).json({ 
+        msg: 'Autenticación exitosa',
+        user: userData
+      });
     });
   })(req, res, next);
 });

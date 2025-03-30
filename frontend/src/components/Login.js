@@ -17,13 +17,18 @@ const Login = ({ authenticate }) => {
   const onSubmit = async e => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5002/api/auth/login', { username, password }); // Asegúrate de que la URL y los datos son correctos
-      console.log(res.data);
-      authenticate(res.data.user); // Pasar el usuario al método authenticate
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, { 
+        username, 
+        password 
+      }, {
+        withCredentials: true // Necesario para cookies/sesiones
+      });
+      
+      authenticate(res.data.user);
       history.push('/dashboard');
     } catch (err) {
       console.error('Error de autenticación:', err.response?.data || err.message);
-      alert('Error al iniciar sesión. Intenta nuevamente.');
+      alert('Error al iniciar sesión. Verifica tus credenciales.');
     }
   };
 
