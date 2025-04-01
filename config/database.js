@@ -1,18 +1,16 @@
 const mongoose = require('mongoose');
-require('dotenv').config({ path: __dirname + '/../.env' }); // Ruta absoluta
 
 const connectDB = async () => {
-  console.log('URI:', process.env.MONGODB_URI); // Debug
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
+    await mongoose.connect('mongodb://localhost:27017/estudio_estrategico', {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
     console.log('MongoDB connected');
   } catch (err) {
-    console.error('Connection error:', err.message);
+    console.error(err.message);
     process.exit(1);
   }
 };
 
-module.exports = connectDB; // Exportación ES5
+module.exports = connectDB;
