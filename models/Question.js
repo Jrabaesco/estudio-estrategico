@@ -1,10 +1,15 @@
 const mongoose = require('mongoose');
 
-const TopicSchema = new mongoose.Schema({
+const QuestionSchema = new mongoose.Schema({
   _id: { type: String, required: true },
-  name: { type: String, required: true },
-  short_name: { type: String, required: true }
+  topic_id: { type: String, required: true },
+  question_text: { type: String, required: true },
+  options: [
+    { type: String, required: true }
+  ],
+  correct_option: { type: String, required: true },
+  tips: { type: String }
 });
 
-const Topic = mongoose.model('Topic', TopicSchema);
-module.exports = Topic;
+const Question = mongoose.model('Question', QuestionSchema);
+module.exports = Question;

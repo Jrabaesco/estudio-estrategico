@@ -1,12 +1,12 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './GeneralExam.css';
 
 const GeneralExam = ({ user }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleStartExam = () => {
-    history.push('/examen-general'); // Ruta para iniciar el examen general
+    navigate.push('/examen-general'); // Ruta para iniciar el examen general
   };
 
   return (

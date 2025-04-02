@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import './Register.css';
 
-// Configuración de axios para incluir credenciales
 axios.defaults.withCredentials = true;
 
 const Register = () => {
@@ -23,7 +22,6 @@ const Register = () => {
     e.preventDefault();
     setError('');
     
-    // Validaciones
     if (!formData.username || !formData.password || !formData.name) {
       setError('Todos los campos son obligatorios');
       return;
@@ -37,7 +35,7 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(
+      await axios.post(
         `${API_URL}/api/auth/register`,
         {
           username: formData.username.toLowerCase(),

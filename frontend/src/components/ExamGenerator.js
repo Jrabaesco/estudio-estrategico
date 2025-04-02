@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './ExamGenerator.css';
 
 const ExamGenerator = ({ user }) => {
@@ -8,7 +8,7 @@ const ExamGenerator = ({ user }) => {
   const [selectedTopic, setSelectedTopic] = useState('');
   const [questionCount, setQuestionCount] = useState(0);
   const [maxQuestions, setMaxQuestions] = useState(0);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTopics = async () => {
@@ -48,7 +48,7 @@ const ExamGenerator = ({ user }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (selectedTopic && questionCount > 0) {
-      history.push(`/exam-by-topic/${selectedTopic}/${questionCount}`); // Redireccionar a exam-by-topic
+      navigate.push(`/exam-by-topic/${selectedTopic}/${questionCount}`); // Redireccionar a exam-by-topic
     } else {
       alert('Por favor, selecciona un tema y una cantidad válida de preguntas.');
     }

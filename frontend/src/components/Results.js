@@ -1,10 +1,10 @@
 import React from 'react';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Results.css';
 
 const Results = () => {
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { correctAnswers, incorrectAnswers, totalQuestions, timer, questions, answeredQuestions } = location.state;
 
   const handleCorrectErrors = () => {
@@ -12,7 +12,7 @@ const Results = () => {
       const answered = answeredQuestions.find(aq => aq.questionId === question._id);
       return answered && !answered.correct;
     });
-    history.push('/correct-errors', { incorrectQuestions });
+    navigate.push('/correct-errors', { incorrectQuestions });
   };
 
   const formatTime = (timer) => {
@@ -34,7 +34,7 @@ const Results = () => {
       <p>Total de preguntas: {totalQuestions}</p>
       <p>Tiempo transcurrido: {formatTime(timer)}</p>
       <button onClick={handleCorrectErrors}>Corregir Errores</button>
-      <button onClick={() => history.push('/exam-generator')}>Volver a Exámenes por Temas</button>
+      <button onClick={() => navigate.push('/exam-generator')}>Volver a Exámenes por Temas</button>
       <div className='respuestas_desarrolladas'>
         <h2>Examen Desarrollado</h2>
         {questions.map((question, index) => (

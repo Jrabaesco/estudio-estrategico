@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 
 const Navbar = ({ logout }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -17,7 +17,7 @@ const Navbar = ({ logout }) => {
   const handleLogout = () => {
     closeMenu();
     logout(); 
-    history.push('/login'); 
+    navigate.push('/login'); 
   };
 
   return (

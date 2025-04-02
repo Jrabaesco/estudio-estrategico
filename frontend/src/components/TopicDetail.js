@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import './TopicDetail.css';
 
 const TopicDetail = ({ user }) => {
   const { id } = useParams();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [topic, setTopic] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -180,7 +180,7 @@ const TopicDetail = ({ user }) => {
             <button onClick={handleRestart}>Reiniciar</button>
             <button onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}>Anterior</button>
             <button onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}>Siguiente</button>
-            <button onClick={() => history.push('/ballot')}>Menú Temas</button>
+            <button onClick={() => navigate.push('/ballot')}>Menú Temas</button>
           </div>
         </div>
       </div>

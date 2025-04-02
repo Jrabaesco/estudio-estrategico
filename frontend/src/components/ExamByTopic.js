@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'; // Importar useRef
 import axios from 'axios';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import './ExamByTopic.css';
 
 const ExamByTopic = ({ user }) => {
   const { topicId, questionCount } = useParams();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState([]);
@@ -89,7 +89,7 @@ const ExamByTopic = ({ user }) => {
     }
 
     // Redirigir a la página de resultados
-    history.push(`/results`, { correctAnswers, incorrectAnswers: totalQuestions - correctAnswers, totalQuestions, timer, questions, answeredQuestions });
+    navigate.push(`/results`, { correctAnswers, incorrectAnswers: totalQuestions - correctAnswers, totalQuestions, timer, questions, answeredQuestions });
   };
 
   const handleRestart = () => {
@@ -225,7 +225,7 @@ const ExamByTopic = ({ user }) => {
             <button onClick={handleRestart}>Reiniciar</button>
             <button onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}>Anterior</button>
             <button onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}>Siguiente</button>
-            <button onClick={() => history.push('/exam-generator')}>Escoger otro tema</button>
+            <button onClick={() => navigate.push('/exam-generator')}>Escoger otro tema</button>
           </div>
         </div>
       </div>

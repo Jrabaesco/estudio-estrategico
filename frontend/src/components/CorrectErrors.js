@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'; // Importar useRef
-import { useLocation, useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './CorrectErrors.css';
 
 const CorrectErrors = ({ user }) => {
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { incorrectQuestions } = location.state || {}; // Añadido para evitar errores
   const [questions, setQuestions] = useState([]);
   const [answeredQuestions, setAnsweredQuestions] = useState([]);
@@ -63,7 +63,7 @@ const CorrectErrors = ({ user }) => {
   const handleFinalize = () => {
     const correctAnswers = answeredQuestions.filter(aq => aq.correct).length;
     const incorrectAnswers = answeredQuestions.length - correctAnswers;
-    history.push('/results', { correctAnswers, incorrectAnswers, totalQuestions: questions.length, timer, questions, answeredQuestions });
+    navigate.push('/results', { correctAnswers, incorrectAnswers, totalQuestions: questions.length, timer, questions, answeredQuestions });
   };
 
   const toggleHighlightAnswers = () => {

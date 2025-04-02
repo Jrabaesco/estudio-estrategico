@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./ExamenGeneral.css";
 
 const ExamenGeneral = ({ user }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState([]);
@@ -103,7 +103,7 @@ const ExamenGeneral = ({ user }) => {
     }
 
     // Redirigir a la página de resultados
-    history.push(`/results`, {
+    navigate.push(`/results`, {
       correctAnswers,
       incorrectAnswers: totalQuestions - correctAnswers,
       totalQuestions,
@@ -111,7 +111,7 @@ const ExamenGeneral = ({ user }) => {
       questions,
       answeredQuestions,
     });
-  }, [answeredQuestions, history, questions, timeLeft, user._id]);
+  }, [answeredQuestions, navigate, questions, timeLeft, user._id]);
 
   // Temporizador
   useEffect(() => {
