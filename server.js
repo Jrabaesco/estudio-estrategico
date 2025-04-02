@@ -12,71 +12,105 @@ require('./config/passport')(passport);
 
 const app = express();
 
-// Database
+// Conexión a la base de datos
 connectDB();
 
-// Enhanced Security Middlewares
-app.use(helmet());
-app.use(express.json({ limit: '10kb' }));
-app.use(cors({ 
-  origin: process.env.CLIENT_URL,
-  credentials: true 
+// Configuración de seguridad mejorada
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      imgSrc: ["'self'", "data:", "https://estudio-estrategico-frontend.onrender.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      connectSrc: [
+        "'self'", 
+        "https://estudio-estrategico-frontend.onrender.com", 
+        "https://estudio-estrategico-backend.onrender.com"
+      ],
+      frameSrc: ["'self'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// Session configuration for production
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGODB_URI,
-      collectionName: 'sessions'
-    }),
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24 // 1 day
-    }
-  })
-);
+// Middlewares básicos
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true }));
 
-// Initialize Passport
+// Configuración de CORS
+app.use(cors({
+  origin: "https://estudio-estrategico-frontend.onrender.com",
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Configuración de sesión
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'secreto_desarrollo',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({ 
+    mongoUrl: process.env.MONGODB_URI,
+    collectionName: 'sessions'
+  }),
+  cookie: {
+    secure: true, // En producción debe ser true (requiere HTTPS)
+    httpOnly: true,
+    sameSite: 'none',
+    maxAge: 24 * 60 * 60 * 1000 // 1 día
+  }
+}));
+
+// Inicializar Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Demasiadas solicitudes desde esta IP, por favor intente nuevamente más tarde'
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // límite por IP
+  message: 'Demasiadas solicitudes desde esta IP, por favor intente más tarde'
 });
 app.use('/api/', limiter);
 
-// Routes
+// Middleware de logs para desarrollo
+if (process.env.NODE_ENV === 'development') {
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.originalUrl}`);
+    next();
+  });
+}
+
+// Rutas
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/topics', require('./routes/topics'));
 
-// Health Check
+// Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    dbState: mongoose.connection.readyState,
-    uptime: process.uptime()
+  res.json({
+    status: 'OK',
+    environment: process.env.NODE_ENV,
+    timestamp: new Date().toISOString(),
+    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
   });
 });
 
-// Error Handling Middleware
+// Manejo de errores
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Error en el servidor',
     message: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor en puerto ${PORT}`);
+  console.log(`Servidor en ejecución en puerto ${PORT}`);
   console.log(`Entorno: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Frontend URL: https://estudio-estrategico-frontend.onrender.com`);
 });
