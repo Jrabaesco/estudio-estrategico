@@ -7,6 +7,7 @@ const MongoStore = require('connect-mongo');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const path = require('path'); // 👈 Nuevo: Para servir el frontend
 const connectDB = require('./config/database');
 require('./config/passport')(passport);
 
@@ -22,12 +23,12 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-      imgSrc: ["'self'", "data:", "https://estudio-estrategico-frontend.onrender.com"],
+      imgSrc: ["'self'", "data:", "https://estudio-estrategico.onrender.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       connectSrc: [
         "'self'", 
-        "https://estudio-estrategico-frontend.onrender.com", 
-        "https://estudio-estrategico-backend.onrender.com"
+        "https://estudio-estrategico.onrender.com", 
+        process.env.MONGODB_URI // 👈 Asegura conexión con MongoDB
       ],
       frameSrc: ["'self'"]
     }
@@ -40,27 +41,28 @@ app.use(helmet({
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Configuración de CORS
+// Configuración de CORS (actualizada con tu FRONTEND_URL)
 app.use(cors({
-  origin: "https://estudio-estrategico-frontend.onrender.com",
+  origin: process.env.FRONTEND_URL || "https://estudio-estrategico.onrender.com",
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Configuración de sesión
+// Configuración de sesión (optimizada para producción)
 app.use(session({
   secret: process.env.SESSION_SECRET || 'secreto_desarrollo',
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({ 
     mongoUrl: process.env.MONGODB_URI,
-    collectionName: 'sessions'
+    collectionName: 'sessions',
+    ttl: 24 * 60 * 60 // 1 día en segundos
   }),
   cookie: {
-    secure: true, // En producción debe ser true (requiere HTTPS)
+    secure: process.env.NODE_ENV === 'production', // 👈 HTTPS solo en producción
     httpOnly: true,
-    sameSite: 'none',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 24 * 60 * 60 * 1000 // 1 día
   }
 }));
@@ -69,25 +71,31 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Rate limiting
+// Rate limiting (más estricto en producción)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // límite por IP
+  max: process.env.NODE_ENV === 'production' ? 50 : 100, // 👈 Límite reducido en producción
   message: 'Demasiadas solicitudes desde esta IP, por favor intente más tarde'
 });
 app.use('/api/', limiter);
 
-// Middleware de logs para desarrollo
+// Middleware de logs (detallado en desarrollo)
 if (process.env.NODE_ENV === 'development') {
-  app.use((req, res, next) => {
-    console.log(`${req.method} ${req.originalUrl}`);
-    next();
-  });
+  const morgan = require('morgan');
+  app.use(morgan('dev'));
 }
 
-// Rutas
+// Rutas API
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/topics', require('./routes/topics'));
+
+// 👇 Sirve el frontend React en producción (IMPORTANTE)
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'frontend', 'build')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'));
+  });
+}
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -99,18 +107,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Manejo de errores
+// Manejo de errores centralizado
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
     error: 'Error en el servidor',
-    message: process.env.NODE_ENV === 'development' ? err.message : undefined
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Contacta al administrador'
   });
 });
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`Servidor en ejecución en puerto ${PORT}`);
-  console.log(`Entorno: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Frontend URL: https://estudio-estrategico-frontend.onrender.com`);
+  console.log(`✅ Servidor en puerto ${PORT}`);
+  console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 Frontend: ${process.env.FRONTEND_URL}`);
+  console.log(`🗄️  MongoDB: ${mongoose.connection.readyState === 1 ? 'Conectado' : 'Desconectado'}`);
 });
